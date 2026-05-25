@@ -27,18 +27,13 @@ const normaliseOrder = (order) => ({
 })
 
 export const getOrders = async ({ search = '' } = {}) => {
-  let orders = []
+  const dataSource = !db
+    ? getDemoOrders().map((order) => normaliseOrder(order))
+    : (
+        await getDocs(collection(db, ORDERS_COLLECTION))
+      ).docs.map((item) => normaliseOrder({ id: item.id, ...item.data() }))
 
-  if (!db) {
-    orders = getDemoOrders().map((order) => normaliseOrder(order))
-  } else {
-    const snapshot = await getDocs(collection(db, ORDERS_COLLECTION))
-    orders = snapshot.docs.map((item) => normaliseOrder({ id: item.id, ...item.data() }))
-  }
-
-  if (!orders.length) {
-    orders = getDemoOrders().map((order) => normaliseOrder(order))
-  }
+  let orders = dataSource.length ? dataSource : getDemoOrders().map((order) => normaliseOrder(order))
 
   if (search.trim()) {
     const query = search.trim().toLowerCase()

@@ -87,9 +87,11 @@ VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 VITE_ADMIN_EMAILS=admin@example.com
+VITE_PUBLIC_BASE_PATH=/elora-ecommerce/
 ```
 
 `VITE_ADMIN_EMAILS` accepts a comma-separated allowlist of admin email addresses. If left empty, any authenticated Firebase user can access the admin panel.
+`VITE_PUBLIC_BASE_PATH` should match your GitHub repository name when deploying to GitHub Pages. Example: if your repository is `boutique-store`, use `VITE_PUBLIC_BASE_PATH=/boutique-store/`.
 
 ## Firebase setup
 
@@ -170,6 +172,26 @@ Run lint checks:
 npm run lint
 ```
 
+## GitHub Pages compatibility
+
+This project is configured for GitHub Pages deployment:
+
+- Vite uses a repo-aware `base` path from `VITE_PUBLIC_BASE_PATH` or `GITHUB_REPOSITORY`
+- React Router uses `HashRouter` to avoid GitHub Pages refresh 404s
+- Public assets use `import.meta.env.BASE_URL` or `%BASE_URL%`
+- Frontend and admin routes work under hash URLs such as `#/products` and `#/admin/orders`
+
+Example deployed routes:
+
+- `#/`
+- `#/products`
+- `#/product/sample-product-auric-satin-evening-dress`
+- `#/cart`
+- `#/checkout`
+- `#/login`
+- `#/admin`
+- `#/admin/orders`
+
 ## Security guidance
 
 - Admin routes are guarded in the React app using Firebase Authentication and the configured email allowlist.
@@ -204,31 +226,86 @@ service cloud.firestore {
 
 Update the admin email before deploying.
 
-## Deployment guide
+## GitHub Pages deployment
 
-You can deploy the built app to Firebase Hosting, Vercel, Netlify, or any static host.
+### 1. Push the project to GitHub
 
-### Option 1: Firebase Hosting
+Create a GitHub repository and push this project to it.
+
+### 2. Configure environment variables locally
+
+Copy `.env.example` to `.env` and fill in your Firebase values.
+
+Set `VITE_PUBLIC_BASE_PATH` to your repository path:
+
+```env
+VITE_PUBLIC_BASE_PATH=/your-repo-name/
+```
+
+Example for a repo named `boutique-store`:
+
+```env
+VITE_PUBLIC_BASE_PATH=/boutique-store/
+```
+
+### 3. Install dependencies
+
+```bash
+npm install
+```
+
+### 4. Build locally and verify
 
 ```bash
 npm run build
-firebase login
-firebase init hosting
-firebase deploy
 ```
 
-When prompted during Hosting setup:
+This generates a GitHub Pages-compatible `dist` folder with the correct asset base path.
 
-- use `dist` as the public directory
-- configure as a single-page app: `yes`
-- do not overwrite your existing `index.html`
+### 5. Deploy to GitHub Pages
 
-### Option 2: Vercel / Netlify
+```bash
+npm run deploy
+```
 
-- Build command: `npm run build`
-- Output directory: `dist`
-- Add all `VITE_FIREBASE_*` and `VITE_ADMIN_EMAILS` environment variables in the hosting dashboard
-- Configure SPA rewrites so all routes serve `index.html`
+The deploy script uses `gh-pages -d dist` and publishes the production build to the `gh-pages` branch.
+
+### 6. Enable GitHub Pages in repository settings
+
+In your GitHub repository:
+
+1. Open `Settings`
+2. Open `Pages`
+3. Under `Build and deployment`, choose `Deploy from a branch`
+4. Select the `gh-pages` branch
+5. Select the `/ (root)` folder
+6. Save
+
+### 7. Test all required routes
+
+After deployment, verify that these routes work and refresh correctly:
+
+- Home: `#/`
+- Products: `#/products`
+- Product details: `#/product/<id>`
+- Cart: `#/cart`
+- Checkout: `#/checkout`
+- Admin login: `#/login`
+- Admin dashboard: `#/admin`
+- Orders page: `#/admin/orders`
+
+### 8. Notes for Firebase on GitHub Pages
+
+- Firebase environment variables are compiled into the app at build time through Vite
+- Update `.env` locally before running `npm run build` or `npm run deploy`
+- Firestore, Auth, and Storage continue to work normally after deployment as long as your Firebase project is configured correctly
+
+### 9. Why this avoids GitHub Pages issues
+
+- `HashRouter` prevents route refresh 404s
+- Vite `base` configuration prevents broken script, CSS, and image paths
+- `%BASE_URL%` and `import.meta.env.BASE_URL` prevent missing public assets
+- The production build is generated before deployment through `predeploy`
 
 ## Production notes
 

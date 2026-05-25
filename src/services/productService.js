@@ -59,18 +59,15 @@ const sanitizeProductPayload = (payload, isEditing = false) => ({
 })
 
 export const getProducts = async ({ search = '', category = 'all', sortBy = 'newest' } = {}) => {
-  let products = []
+  const dataSource = !db
+    ? getDemoProducts().map((product) => normaliseProduct(product))
+    : (
+        await getDocs(collection(db, PRODUCTS_COLLECTION))
+      ).docs.map((item) => normaliseProduct({ id: item.id, ...item.data() }))
 
-  if (!db) {
-    products = getDemoProducts().map((product) => normaliseProduct(product))
-  } else {
-    const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION))
-    products = snapshot.docs.map((item) => normaliseProduct({ id: item.id, ...item.data() }))
-  }
-
-  if (!products.length) {
-    products = getDemoProducts().map((product) => normaliseProduct(product))
-  }
+  let products = dataSource.length
+    ? dataSource
+    : getDemoProducts().map((product) => normaliseProduct(product))
 
   if (category !== 'all') {
     products = products.filter(

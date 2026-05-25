@@ -1,6 +1,8 @@
 import { cn } from '../../utils/cn'
 import { SITE_CONFIG } from '../../constants/site'
 
+const brandLogoUrl = `${import.meta.env.BASE_URL}elora-logo.png`
+
 const BrandMark = ({
   className,
   imageClassName,
@@ -12,7 +14,7 @@ const BrandMark = ({
 }) => (
   <div className={cn('flex items-center gap-3', compact ? 'gap-2.5' : 'gap-4', className)}>
     <img
-      src="/elora-logo.png"
+      src={brandLogoUrl}
       alt={`${SITE_CONFIG.name} logo`}
       className={cn(
         'h-12 w-12 shrink-0 rounded-2xl border border-sand/70 bg-[#fcf7eb] p-1.5 object-contain shadow-soft',
