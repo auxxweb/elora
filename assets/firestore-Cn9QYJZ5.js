@@ -1,0 +1,1 @@
+var e=e=>e?typeof e==`string`?e:e?.toDate?e.toDate().toISOString():``:``;export{e as t};
