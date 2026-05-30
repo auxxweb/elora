@@ -1,0 +1,1 @@
+var e=(e=``)=>e.toString().trim().toLowerCase().replace(/&/g,`and`).replace(/[^a-z0-9]+/g,`-`).replace(/^-+|-+$/g,``),t=(e=``)=>e.split(`,`).map(e=>e.trim()).filter(Boolean);export{e as n,t};
